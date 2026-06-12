@@ -204,6 +204,48 @@
       letter-spacing: 0.04em;
     }
 
+
+
+    .mood-adjust {
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      text-align: center;
+    }
+
+    .mood-adjust-title {
+      font-size: 0.78rem;
+      color: rgba(255, 255, 255, 0.72);
+      margin-bottom: 12px;
+      letter-spacing: 0.08em;
+    }
+
+    .mood-adjust-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 9px;
+    }
+
+    .mood-chip {
+      padding: 10px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      background: rgba(255, 255, 255, 0.12);
+      color: rgba(255, 255, 255, 0.92);
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: transform 0.18s ease, background 0.18s ease;
+    }
+
+    .mood-chip:hover {
+      transform: scale(1.03);
+      background: rgba(255, 255, 255, 0.20);
+    }
+
     .music-actions {
       display: flex;
       flex-direction: column;
@@ -402,6 +444,19 @@
         <div class="mood-badge" id="mood-badge">mood</div>
         <div class="lyrics-status" id="lyrics-status">lyrics status</div>
 
+        <div class="mood-adjust">
+          <div class="mood-adjust-title">ちがうかも？詩の気分を変える</div>
+          <div class="mood-adjust-buttons">
+            <button class="mood-chip" type="button" onclick="changeMoodManually('happy')">明るめ</button>
+            <button class="mood-chip" type="button" onclick="changeMoodManually('bittersweet')">切なめ</button>
+            <button class="mood-chip" type="button" onclick="changeMoodManually('love')">恋っぽい</button>
+            <button class="mood-chip" type="button" onclick="changeMoodManually('chill')">静かめ</button>
+            <button class="mood-chip" type="button" onclick="changeMoodManually('dark')">暗め</button>
+            <button class="mood-chip" type="button" onclick="changeMoodManually('energy')">元気</button>
+          </div>
+        </div>
+
+
         <audio id="preview-audio" controls></audio>
 
         <div class="music-actions">
@@ -430,7 +485,7 @@
   </div>
 
   <script>
-    const LASTFM_API_KEY = "c37a66a61e725531abc5f6ca1d991082"; // Last.fm APIキーをここに貼る。未設定でもアプリ自体は動きます。
+    const LASTFM_API_KEY = ""; // Last.fm APIキーをここに貼る。未設定でもアプリ自体は動きます。
 
     const poemDatabase = {
       happy: {
@@ -1456,7 +1511,7 @@
     async function fetchLastFmTagsForTrack(track) {
       const apiKey = LASTFM_API_KEY.trim();
 
-      if (!apiKey || apiKey === "") {
+      if (!apiKey || apiKey === "c37a66a61e725531abc5f6ca1d991082") {
         return {
           tags: [],
           found: false,
@@ -1511,6 +1566,28 @@
           message: "Last.fmタグ取得中にエラーが起きました。"
         };
       }
+    }
+
+
+
+    let currentAutoMoodLabel = "";
+
+    function applyPoemMood(mood, labelText) {
+      const selectedPoem = poemDatabase[mood] || poemDatabase.neutral || poemDatabase.happy;
+
+      document.body.style.background = selectedPoem.bg;
+      document.getElementById("res-music-review").innerText = selectedPoem.review;
+      document.getElementById("mood-badge").innerText = labelText || selectedPoem.label || mood;
+      document.getElementById("res-poem-body").innerText = selectedPoem.body;
+      document.getElementById("res-poem-title").innerText = selectedPoem.title;
+      document.getElementById("res-poem-author").innerText = selectedPoem.author;
+      document.getElementById("res-poem-review").innerText = selectedPoem.poem_review;
+    }
+
+    function changeMoodManually(mood) {
+      const selectedPoem = poemDatabase[mood] || poemDatabase.neutral || poemDatabase.happy;
+      const label = selectedPoem.label || mood;
+      applyPoemMood(mood, `manual mood: ${label}`);
     }
 
     async function searchMusic() {
@@ -1582,24 +1659,16 @@
 
         const rankings = getMoodRankings(moodResult.scores);
         const mood = getBestMood(moodResult.scores);
-        const selectedPoem = poemDatabase[mood] || poemDatabase.neutral || poemDatabase.happy;
         const moodLabel = formatMoodRankings(rankings);
-
-        document.body.style.background = selectedPoem.bg;
+        currentAutoMoodLabel = moodLabel;
 
         document.getElementById("music-jacket").src = getLargeArtwork(track.artworkUrl100);
         document.getElementById("res-song-title").innerText = track.trackName || "曲名不明";
         document.getElementById("res-artist-name").innerText = track.artistName || "アーティスト不明";
         document.getElementById("res-album-name").innerText = track.collectionName || "アルバム不明";
 
-        document.getElementById("res-music-review").innerText = selectedPoem.review;
-        document.getElementById("mood-badge").innerText = moodLabel;
+        applyPoemMood(mood, moodLabel);
         document.getElementById("lyrics-status").innerText = `${lyricsResult.message} / ${lastFmResult.message}`;
-
-        document.getElementById("res-poem-body").innerText = selectedPoem.body;
-        document.getElementById("res-poem-title").innerText = selectedPoem.title;
-        document.getElementById("res-poem-author").innerText = selectedPoem.author;
-        document.getElementById("res-poem-review").innerText = selectedPoem.poem_review;
 
         const audio = document.getElementById("preview-audio");
 
