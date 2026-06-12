@@ -1,0 +1,1647 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Poemyric</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family:
+        "Shuei KakuGo Gin",
+        "A-OTF Shuei KakuGo Gin",
+        "秀英角ゴシック銀",
+        "Yu Gothic",
+        "Yu Gothic Medium",
+        "Hiragino Sans",
+        "Hiragino Kaku Gothic ProN",
+        "Noto Sans JP",
+        sans-serif;
+      background: #121212;
+      color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background 1.5s ease;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      padding: 25px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: #b3b3b3;
+      margin-bottom: 40px;
+      line-height: 1.8;
+      letter-spacing: 0.06em;
+    }
+
+    .search-box {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 18px;
+      border-radius: 30px;
+      border: 1px solid #333;
+      background: #242424;
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+
+    button {
+      padding: 15px;
+      border-radius: 30px;
+      border: none;
+      background: #fa2d48;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.08em;
+    }
+
+    button:hover {
+      transform: scale(1.02);
+      filter: brightness(1.08);
+    }
+
+    .loading {
+      display: none;
+      font-size: 1.1rem;
+      margin-top: 20px;
+      color: #ddd;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      border-top-color: #fff;
+      margin: 20px auto;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .result-view {
+      display: none;
+      margin-top: 10px;
+      text-align: left;
+      animation: fadeIn 0.8s ease-in-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .music-card {
+      background: rgba(0, 0, 0, 0.38);
+      padding: 22px;
+      border-radius: 24px;
+      margin-bottom: 30px;
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      text-align: center;
+      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.25);
+    }
+
+    .jacket-img {
+      width: 190px;
+      height: 190px;
+      border-radius: 18px;
+      object-fit: cover;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      margin-bottom: 16px;
+      background: #333;
+    }
+
+    .song-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      letter-spacing: 0.04em;
+    }
+
+    .artist-name {
+      font-size: 1rem;
+      color: #c8c8c8;
+      margin-bottom: 8px;
+    }
+
+    .album-name {
+      font-size: 0.82rem;
+      color: #999;
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+
+    .music-review {
+      font-size: 0.92rem;
+      color: #e0e0e0;
+      line-height: 1.8;
+      text-align: left;
+      letter-spacing: 0.04em;
+    }
+
+    .mood-badge {
+      display: inline-block;
+      margin: 16px auto 0;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+    }
+
+    .lyrics-status {
+      margin-top: 12px;
+      font-size: 0.74rem;
+      color: rgba(255, 255, 255, 0.58);
+      line-height: 1.6;
+      letter-spacing: 0.04em;
+    }
+
+    .music-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .music-actions a {
+      display: block;
+      text-align: center;
+      padding: 12px;
+      border-radius: 24px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #fff;
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      letter-spacing: 0.06em;
+    }
+
+    audio {
+      width: 100%;
+      margin-top: 16px;
+    }
+
+    .bridge-text {
+      font-size: 0.95rem;
+      font-weight: 500;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.88);
+      margin: 36px 0 20px;
+      letter-spacing: 0.14em;
+      line-height: 1.8;
+    }
+
+    .poem-card {
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.76) 38%, rgba(245, 241, 235, 0.96) 100%);
+      color: #2a2725;
+      padding: 42px 27px 32px;
+      border-radius: 30px;
+      box-shadow:
+        0 18px 45px rgba(0, 0, 0, 0.28),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.68);
+      backdrop-filter: blur(18px);
+    }
+
+    .poem-card::before {
+      content: "";
+      position: absolute;
+      inset: 12px;
+      border: 1px solid rgba(90, 76, 68, 0.18);
+      border-radius: 24px;
+      pointer-events: none;
+    }
+
+    .poem-card::after {
+      content: "ことば";
+      position: absolute;
+      right: 22px;
+      top: 16px;
+      font-size: 0.72rem;
+      letter-spacing: 0.32em;
+      color: rgba(70, 60, 55, 0.24);
+      writing-mode: vertical-rl;
+    }
+
+    .poem-body {
+      position: relative;
+      z-index: 1;
+      font-size: 1.08rem;
+      font-weight: 400;
+      line-height: 2.5;
+      letter-spacing: 0.14em;
+      margin-bottom: 30px;
+      white-space: pre-wrap;
+      padding: 4px 18px 2px 18px;
+      border-left: none;
+      text-align: left;
+    }
+
+    .poem-body::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 10px;
+      width: 2px;
+      height: calc(100% - 20px);
+      background: linear-gradient(
+        to bottom,
+        rgba(80, 65, 58, 0),
+        rgba(80, 65, 58, 0.42),
+        rgba(80, 65, 58, 0)
+      );
+    }
+
+    .poem-info {
+      position: relative;
+      z-index: 1;
+      text-align: right;
+      font-size: 0.78rem;
+      color: rgba(42, 39, 37, 0.58);
+      margin-bottom: 24px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+    }
+
+    .poem-review-title {
+      position: relative;
+      z-index: 1;
+      font-weight: 600;
+      font-size: 0.86rem;
+      color: rgba(42, 39, 37, 0.76);
+      margin-bottom: 8px;
+      border-top: 1px solid rgba(42, 39, 37, 0.12);
+      padding-top: 18px;
+      letter-spacing: 0.08em;
+    }
+
+    .poem-review {
+      position: relative;
+      z-index: 1;
+      font-size: 0.82rem;
+      color: rgba(42, 39, 37, 0.68);
+      line-height: 1.9;
+      letter-spacing: 0.05em;
+    }
+
+    .back-btn {
+      background: rgba(255, 255, 255, 0.2);
+      width: 100%;
+      margin-top: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+
+    .error-text {
+      color: #ffb3b3;
+      font-size: 0.9rem;
+      margin-top: 16px;
+      line-height: 1.6;
+      display: none;
+    }
+
+    .note {
+      color: #888;
+      font-size: 0.78rem;
+      line-height: 1.6;
+      margin-top: 16px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div id="main-ui">
+      <h1>Poemyric</h1>
+      <p class="subtitle">好きな音楽から、今の気持ちを表す詩を見つけよう</p>
+
+      <div class="search-box">
+        <input
+          type="text"
+          id="song-input"
+          placeholder="例：Vaundy 踊り子 / 米津玄師 Lemon"
+        />
+
+        <button onclick="searchMusic()">キブンを見る</button>
+
+        <p id="error-text" class="error-text"></p>
+
+        <p class="note">
+          iTunes Search APIとLRCLIBを使用。歌詞は判定だけに使い、上位ムードを表示します。
+        </p>
+      </div>
+    </div>
+
+    <div id="loading-ui" class="loading">
+      <div class="spinner"></div>
+      <p>曲と言葉の気配を探しています...</p>
+    </div>
+
+    <div id="result-ui" class="result-view">
+      <div class="music-card">
+        <img src="" id="music-jacket" class="jacket-img" alt="ジャケット画像" />
+
+        <div class="song-title" id="res-song-title">曲名</div>
+        <div class="artist-name" id="res-artist-name">アーティスト名</div>
+        <div class="album-name" id="res-album-name">アルバム名</div>
+
+        <div class="music-review" id="res-music-review">
+          ここに曲の解釈が入ります。
+        </div>
+
+        <div class="mood-badge" id="mood-badge">mood</div>
+        <div class="lyrics-status" id="lyrics-status">lyrics status</div>
+
+        <audio id="preview-audio" controls></audio>
+
+        <div class="music-actions">
+          <a href="#" id="music-link" target="_blank" rel="noopener noreferrer">
+            曲のページを開く
+          </a>
+        </div>
+      </div>
+
+      <div class="bridge-text">▼ そんな気分のあなたに、この言葉を。</div>
+
+      <div class="poem-card">
+        <div class="poem-body" id="res-poem-body">詩の本文</div>
+
+        <div class="poem-info">
+          <span id="res-poem-title">タイトル</span> /
+          <span id="res-poem-author">作者</span>
+        </div>
+
+        <div class="poem-review-title">💡 言葉の案内</div>
+        <div class="poem-review" id="res-poem-review">解説</div>
+      </div>
+
+      <button class="back-btn" onclick="resetApp()">もう一度探す</button>
+    </div>
+  </div>
+
+  <script>
+    const LASTFM_API_KEY = "c37a66a61e725531abc5f6ca1d991082"; // Last.fm APIキーをここに貼る。未設定でもアプリ自体は動きます。
+
+    const poemDatabase = {
+      happy: {
+        label: "happy / bright",
+        bg: "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)",
+        review:
+          "この曲には、ちゃんと明るい方向へ心を持ち上げる力があります。軽やかさや楽しさが前に出ていて、気持ちを少し弾ませてくれる一曲です。",
+        body:
+          "雨ニモマケズ\n風ニモマケズ\n\n雪ニモ夏ノ暑サニモマケヌ\n丈夫ナカラダヲモチ",
+        title: "「雨ニモマケズ」より",
+        author: "宮沢賢治",
+        poem_review:
+          "明るいだけではなく、静かな強さを持つ曲に合う言葉です。"
+      },
+
+      neutral: {
+        label: "neutral / undefined",
+        bg: "linear-gradient(135deg, #434343 0%, #8e9eab 48%, #eef2f3 100%)",
+        review:
+          "この曲には、ひとつの気分に決めきれない余白があります。明るいとも暗いとも言い切れない、曖昧な感情のまま寄り添ってくれる一曲です。",
+        body:
+          "こゝろなきうたのしらべは\nひとふさのぶだうのごとし\n\nなさけあるてにもつまれて\nあたゝかきさけとなるらむ",
+        title: "「若菜集」より",
+        author: "島崎藤村",
+        poem_review:
+          "まだ名前のつかない気分に、藤村のやわらかい詩の調子を合わせました。"
+      },
+
+      energy: {
+        label: "energy / impulse",
+        bg: "linear-gradient(135deg, #ff512f 0%, #f09819 100%)",
+        review:
+          "この曲には、胸の奥を強く押し出すような熱量があります。迷っている気持ちを振り切って、一歩前へ進ませる力を感じます。",
+        body:
+          "地上にするどく竹が生え、\nまつしぐらに竹が生え、\n\n凍れる節節りんりんと、\n青空のもとに竹が生え、",
+        title: "「竹」より",
+        author: "萩原朔太郎",
+        poem_review:
+          "鋭く伸びていく竹のイメージが、衝動や勢いのある曲に合います。"
+      },
+
+      dark: {
+        label: "dark / fragile",
+        bg: "linear-gradient(135deg, #0f0c29 0%, #302b63 55%, #24243e 100%)",
+        review:
+          "この曲には、夜の静けさや、言葉にしにくい感情に触れるような深さがあります。少し沈んだ気分にも、無理に明るくせず寄り添ってくれる一曲です。",
+        body:
+          "汚れつちまつた悲しみに\n今日も小雪の降りかかる\n\n汚れつちまつた悲しみに\n今日も風さへ吹きすぎる",
+        title: "「汚れつちまつた悲しみに……」より",
+        author: "中原中也",
+        poem_review:
+          "暗さを強く言い切らず、静かな悲しみとして受け止める詩です。"
+      },
+
+      chill: {
+        label: "chill / calm",
+        bg: "linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)",
+        review:
+          "この曲には、落ち着いた空気や、ゆっくり呼吸を整えるような雰囲気があります。静かに気持ちをほどいてくれる一曲です。",
+        body:
+          "イツモシヅカニワラッテヰル\n\n一日ニ玄米四合ト\n味噌ト少シノ野菜ヲタベ",
+        title: "「雨ニモマケズ」より",
+        author: "宮沢賢治",
+        poem_review:
+          "派手ではないけれど、暮らしの中にある静かな強さを感じる言葉です。"
+      },
+
+      nostalgia: {
+        label: "nostalgia / memory",
+        bg: "linear-gradient(135deg, #c79081 0%, #dfa579 45%, #f6d365 100%)",
+        review:
+          "この曲には、昔の記憶をそっと取り出すような懐かしさがあります。夕方の光や、もう戻れない時間のあたたかさを感じる一曲です。",
+        body:
+          "時は逝く。\n何時しらず柔かに\n\n陰影してぞゆく。\n時は逝く。",
+        title: "「思ひ出」より",
+        author: "北原白秋",
+        poem_review:
+          "過ぎていく時間をそのまま抱えるような、懐かしい曲に合う抜粋です。"
+      },
+
+      love: {
+        label: "love / tenderness",
+        bg: "linear-gradient(135deg, #ff9a9e 0%, #fecfef 55%, #fcb69f 100%)",
+        review:
+          "この曲には、誰かを思う気持ちのやわらかさがあります。近づきたいのに少し怖い、そんな恋の揺れを感じます。",
+        body:
+          "髪五尺ときなば水にやはらかき\n少女ごころは秘めて放たじ",
+        title: "「みだれ髪」より",
+        author: "与謝野晶子",
+        poem_review:
+          "恋の強さと、まだ言葉にしきれない心の揺れを含んだ短歌です。"
+      },
+
+      lonely: {
+        label: "lonely / transparent",
+        bg: "linear-gradient(135deg, #485563 0%, #29323c 100%)",
+        review:
+          "この曲には、ひとりで歩く夜のような透明感があります。孤独をただ寂しいものとしてではなく、自分の輪郭を確かめる時間として感じます。",
+        body:
+          "はたらけど\nはたらけど猶わが生活楽にならざり\nぢつと手を見る",
+        title: "「一握の砂」より",
+        author: "石川啄木",
+        poem_review:
+          "孤独や生活感が、静かな実感として立ち上がる短歌です。"
+      },
+
+      hope: {
+        label: "hope / restart",
+        bg: "linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%)",
+        review:
+          "この曲には、曇った気持ちの向こう側へ抜けていくような希望があります。大げさな明るさではなく、もう一度始めるための透明な力を感じます。",
+        body:
+          "雨ニモマケズ\n風ニモマケズ\n\n雪ニモ夏ノ暑サニモマケヌ\n丈夫ナカラダヲモチ",
+        title: "「雨ニモマケズ」より",
+        author: "宮沢賢治",
+        poem_review:
+          "派手な希望ではなく、耐えて立ち続けるような希望を感じる詩です。"
+      },
+
+      city: {
+        label: "city / neon",
+        bg: "linear-gradient(135deg, #232526 0%, #414345 50%, #0f2027 100%)",
+        review:
+          "この曲には、夜の街を歩くようなクールさがあります。ネオン、信号、知らない誰かの生活が混ざる都会的な孤独を感じます。",
+        body:
+          "青猫の眼をした都会の夜に\n\nしづかに光るものがある\nさびしい街の灯がある",
+        title: "「青猫」より",
+        author: "萩原朔太郎",
+        poem_review:
+          "都市の夜にある美しさと孤独を感じる曲に合う雰囲気です。"
+      },
+
+      dreamy: {
+        label: "dreamy / floating",
+        bg: "linear-gradient(135deg, #c471f5 0%, #fa71cd 50%, #fbc2eb 100%)",
+        review:
+          "この曲には、現実から少し浮き上がるような幻想感があります。夢の中を漂うような、不確かで美しい雰囲気を感じます。",
+        body:
+          "見果てぬ夢の歎きは\n目に見えぬ銀の鎖の\n\n微かに過去と現在とを\n繋いでゐる",
+        title: "「思ひ出」より",
+        author: "北原白秋",
+        poem_review:
+          "夢と記憶のあいだに浮いているような曲に合う抜粋です。"
+      },
+
+      heartbreak: {
+        label: "heartbreak / after love",
+        bg: "linear-gradient(135deg, #355c7d 0%, #6c5b7b 45%, #f8b195 100%)",
+        review:
+          "この曲には、終わってしまった関係の余韻があります。まだ完全には手放せない気持ちと、それでも前を向こうとする静かな痛みを感じます。",
+        body:
+          "汚れつちまつた悲しみに\n今日も小雪の降りかかる\n\n汚れつちまつた悲しみに\n今日も風さへ吹きすぎる",
+        title: "「汚れつちまつた悲しみに……」より",
+        author: "中原中也",
+        poem_review:
+          "失恋のあとに残る感情を、冷たく静かな悲しみとして映す詩です。"
+      },
+
+      obsession: {
+        label: "obsession / heavy love",
+        bg: "linear-gradient(135deg, #200122 0%, #6f0000 100%)",
+        review:
+          "この曲には、好きという気持ちが少し重く、深く沈んでいくような危うさがあります。愛情と執着の境目がぼやけるような雰囲気です。",
+        body:
+          "その子二十櫛にながるる黒髪の\nおごりの春のうつくしきかな",
+        title: "「みだれ髪」より",
+        author: "与謝野晶子",
+        poem_review:
+          "恋の明るさだけでなく、強く惹かれてしまう感覚がある曲に合わせました。"
+      },
+
+      anger: {
+        label: "anger / ignition",
+        bg: "linear-gradient(135deg, #cb2d3e 0%, #ef473a 100%)",
+        review:
+          "この曲には、抑えていた感情が火花のように弾ける強さがあります。怒りをただ荒さではなく、自分を守るための熱として感じます。",
+        body:
+          "地上にするどく竹が生え、\nまつしぐらに竹が生え、\n\n凍れる節節りんりんと、\n青空のもとに竹が生え、",
+        title: "「竹」より",
+        author: "萩原朔太郎",
+        poem_review:
+          "怒りや反発を、鋭く立ち上がる力として受け止める詩です。"
+      },
+
+      rebellion: {
+        label: "rebellion / break out",
+        bg: "linear-gradient(135deg, #000000 0%, #434343 100%)",
+        review:
+          "この曲には、決められた枠を壊して外へ出ようとする衝動があります。従うよりも、自分の声を選びたい気分に近い一曲です。",
+        body:
+          "光る地面に竹が生え、\n青竹が生え、\n\n地下には竹の根が生え、\n根がしだいにほそらみ、",
+        title: "「竹」より",
+        author: "萩原朔太郎",
+        poem_review:
+          "地面を突き抜けて伸びていく竹のイメージが、反抗や突破の気分に合います。"
+      },
+
+      numb: {
+        label: "numb / empty room",
+        bg: "linear-gradient(135deg, #bdc3c7 0%, #8e9eab 100%)",
+        review:
+          "この曲には、悲しいとも苦しいとも言い切れない、感情が遠くなるような空白があります。心が静かに止まっているような雰囲気です。",
+        body:
+          "汚れつちまつた悲しみは\nなにのぞむなくねがふなく\n\n汚れつちまつた悲しみは\n倦怠のうちに日を送る",
+        title: "「汚れつちまつた悲しみに……」より",
+        author: "中原中也",
+        poem_review:
+          "何かを強く感じるというより、感情が遠くにあるような曲に合わせました。"
+      },
+
+      fragile: {
+        label: "fragile / glass heart",
+        bg: "linear-gradient(135deg, #f8e8e8 0%, #f5f7fa 50%, #cfd9df 100%)",
+        review:
+          "この曲には、少し触れただけで壊れてしまいそうな繊細さがあります。小さな言葉や沈黙に心が揺れるような雰囲気です。",
+        body:
+          "かすかにけぶる繊毛が生え、\nかすかにふるえ。\n\nかたき地面に竹が生え、\n地上にするどく竹が生え、",
+        title: "「竹」より",
+        author: "萩原朔太郎",
+        poem_review:
+          "繊細さと鋭さが同時にある曲に合う抜粋です。"
+      },
+
+      bittersweet: {
+        label: "bittersweet / soft pain",
+        bg: "linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)",
+        review:
+          "この曲には、甘さと切なさが同時にあります。幸せだったからこそ少し痛い、そんな余韻を感じる一曲です。",
+        body:
+          "東海の小島の磯の白砂に\nわれ泣きぬれて\n蟹とたはむる",
+        title: "「一握の砂」より",
+        author: "石川啄木",
+        poem_review:
+          "さびしさの中にどこか柔らかさがある、甘く切ない曲に合います。"
+      },
+
+      rain: {
+        label: "rain / wet memory",
+        bg: "linear-gradient(135deg, #4b79a1 0%, #6dd5fa 55%, #ffffff 100%)",
+        review:
+          "この曲には、雨の日のような湿度と静けさがあります。言えなかったことが水滴のように残る、しっとりした雰囲気です。",
+        body:
+          "雨ニモマケズ\n風ニモマケズ\n\n雪ニモ夏ノ暑サニモマケヌ\n丈夫ナカラダヲモチ",
+        title: "「雨ニモマケズ」より",
+        author: "宮沢賢治",
+        poem_review:
+          "雨の気配を、ただ暗さではなく、静かに耐える力として受け取る詩です。"
+      },
+
+      winter: {
+        label: "winter / cold light",
+        bg: "linear-gradient(135deg, #eaf4ff 0%, #ffffff 50%, #b8d8f8 100%)",
+        review:
+          "この曲には、冬の空気のような冷たさと透明感があります。寂しさの中にも、澄んだ光が差すような雰囲気です。",
+        body:
+          "汚れつちまつた悲しみに\n今日も小雪の降りかかる\n\n汚れつちまつた悲しみに\n今日も風さへ吹きすぎる",
+        title: "「汚れつちまつた悲しみに……」より",
+        author: "中原中也",
+        poem_review:
+          "冬の冷たさと、静かな悲しみが重なる曲に合います。"
+      },
+
+      youth: {
+        label: "youth / blue days",
+        bg: "linear-gradient(135deg, #56ccf2 0%, #2f80ed 100%)",
+        review:
+          "この曲には、青くてまっすぐな季節の匂いがあります。未完成だからこそ光っている、青春の揺れを感じます。",
+        body:
+          "秋は来ぬ\n秋は来ぬ\n\n一葉は花は露ありて\n風の来て弾く琴の音に",
+        title: "「若菜集」より",
+        author: "島崎藤村",
+        poem_review:
+          "若さのきらめきと、季節が移っていく寂しさが合わさる曲に向いています。"
+      },
+
+      playful: {
+        label: "playful / candy pop",
+        bg: "linear-gradient(135deg, #fddb92 0%, #d1fdff 100%)",
+        review:
+          "この曲には、軽やかで少しいたずらっぽい楽しさがあります。深刻になりすぎず、今を跳ねるように楽しむ雰囲気です。",
+        body:
+          "こゝろなきうたのしらべは\nひとふさのぶだうのごとし\n\nなさけあるてにもつまれて\nあたゝかきさけとなるらむ",
+        title: "「若菜集」より",
+        author: "島崎藤村",
+        poem_review:
+          "軽やかで、歌そのものの楽しさを感じる曲に合わせました。"
+      },
+
+      healing: {
+        label: "healing / gentle recovery",
+        bg: "linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)",
+        review:
+          "この曲には、疲れた心を少しずつほどくようなやさしさがあります。無理に励ますのではなく、そっと隣にいてくれる雰囲気です。",
+        body:
+          "慾ハナク\n決シテ瞋ラズ\n\nイツモシヅカニ\nワラッテヰル",
+        title: "「雨ニモマケズ」より",
+        author: "宮沢賢治",
+        poem_review:
+          "がんばらせるより、静かに整えるような曲に合う抜粋です。"
+      },
+
+      midnight: {
+        label: "midnight / sleepless",
+        bg: "linear-gradient(135deg, #141e30 0%, #243b55 100%)",
+        review:
+          "この曲には、眠れない夜の温度があります。誰にも見せない考えが、暗い部屋の中で静かに増えていくような雰囲気です。",
+        body:
+          "汚れつちまつた悲しみに\n今日も小雪の降りかかる\n\n汚れつちまつた悲しみに\n今日も風さへ吹きすぎる",
+        title: "「汚れつちまつた悲しみに……」より",
+        author: "中原中也",
+        poem_review:
+          "眠れない夜に浮かぶ、静かな悲しみに合う詩です。"
+      },
+
+      drive: {
+        label: "drive / forward motion",
+        bg: "linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)",
+        review:
+          "この曲には、夜の道を進んでいくような疾走感があります。止まっていた気持ちを、景色ごと前へ流していく雰囲気です。",
+        body:
+          "地上にするどく竹が生え、\nまつしぐらに竹が生え、\n\n凍れる節節りんりんと、\n青空のもとに竹が生え、",
+        title: "「竹」より",
+        author: "萩原朔太郎",
+        poem_review:
+          "まっすぐ伸びていく言葉が、前へ進む曲の感覚に合います。"
+      },
+
+      confidence: {
+        label: "confidence / self glow",
+        bg: "linear-gradient(135deg, #f7971e 0%, #ffd200 100%)",
+        review:
+          "この曲には、自分を信じて立つ強さがあります。誰かに認められる前に、自分で自分を肯定するような明るい芯を感じます。",
+        body:
+          "地上にするどく竹が生え、\nまつしぐらに竹が生え、\n\n凍れる節節りんりんと、\n青空のもとに竹が生え、",
+        title: "「竹」より",
+        author: "萩原朔太郎",
+        poem_review:
+          "外から与えられる自信ではなく、自分の中から立ち上がる強さを感じる詩です。"
+      }
+    };
+
+    function showError(message) {
+      const errorText = document.getElementById("error-text");
+      errorText.innerText = message;
+      errorText.style.display = "block";
+    }
+
+    function hideError() {
+      const errorText = document.getElementById("error-text");
+      errorText.innerText = "";
+      errorText.style.display = "none";
+    }
+
+    function getLargeArtwork(url) {
+      if (!url) return "";
+      return url.replace("100x100bb.jpg", "600x600bb.jpg");
+    }
+
+    function cleanLyricsText(text) {
+      if (!text) return "";
+
+      return text
+        .replace(/\[\d{1,2}:\d{2}(?:\.\d{1,3})?\]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function createEmptyScores() {
+      return {
+        happy: 0,
+        neutral: 0,
+        energy: 0,
+        dark: 0,
+        chill: 0,
+        nostalgia: 0,
+        love: 0,
+        lonely: 0,
+        hope: 0,
+        city: 0,
+        dreamy: 0,
+
+        heartbreak: 0,
+        obsession: 0,
+        anger: 0,
+        rebellion: 0,
+        numb: 0,
+        fragile: 0,
+        bittersweet: 0,
+        rain: 0,
+        winter: 0,
+        youth: 0,
+        playful: 0,
+        healing: 0,
+        midnight: 0,
+        drive: 0,
+        confidence: 0
+      };
+    }
+
+    function addScoreByRules(scores, text, rules, multiplier) {
+      const normalized = (text || "").toLowerCase();
+
+      for (const rule of rules) {
+        if (!(rule.mood in scores)) {
+          scores[rule.mood] = 0;
+        }
+
+        for (const word of rule.words) {
+          if (normalized.includes(word.toLowerCase())) {
+            scores[rule.mood] += rule.weight * multiplier;
+          }
+        }
+      }
+    }
+
+    function getLastFmTagRules() {
+      return [
+        { mood: "happy", weight: 4, tags: ["happy", "joyful", "cheerful", "sunny", "party", "feel good", "fun"] },
+        { mood: "playful", weight: 4, tags: ["cute", "kawaii", "children", "kids", "fun", "playful", "comedy", "dance", "upbeat"] },
+        { mood: "healing", weight: 4, tags: ["healing", "relaxing", "soothing", "gentle", "calm", "peaceful", "comforting"] },
+        { mood: "chill", weight: 4, tags: ["chill", "chillout", "lofi", "acoustic", "soft", "mellow", "ambient", "jazz"] },
+        { mood: "nostalgia", weight: 4, tags: ["nostalgic", "nostalgia", "oldies", "retro", "memory", "memories"] },
+        { mood: "bittersweet", weight: 4, tags: ["bittersweet", "emotional", "sentimental", "tender", "melancholy pop"] },
+        { mood: "love", weight: 4, tags: ["love", "romantic", "romance", "love song"] },
+        { mood: "heartbreak", weight: 5, tags: ["heartbreak", "breakup", "sad love", "lost love", "tearjerker"] },
+        { mood: "lonely", weight: 4, tags: ["lonely", "solitude", "alone", "missing", "isolation"] },
+        { mood: "dark", weight: 4, tags: ["dark", "sad", "depressing", "melancholic", "gothic", "eerie", "creepy", "dark pop"] },
+        { mood: "fragile", weight: 4, tags: ["fragile", "delicate", "vulnerable", "emotional", "soft"] },
+        { mood: "numb", weight: 4, tags: ["empty", "numb", "hollow", "cold", "minimal"] },
+        { mood: "anger", weight: 4, tags: ["angry", "aggressive", "rage", "screamo", "hardcore", "metal"] },
+        { mood: "rebellion", weight: 4, tags: ["rebellious", "rebellion", "punk", "revolution", "protest"] },
+        { mood: "energy", weight: 4, tags: ["energetic", "rock", "dance", "edm", "electronic", "fast", "powerful"] },
+        { mood: "city", weight: 4, tags: ["city", "urban", "night", "neon", "tokyo", "synthpop"] },
+        { mood: "midnight", weight: 4, tags: ["midnight", "night", "late night", "sleepless"] },
+        { mood: "drive", weight: 4, tags: ["driving", "drive", "road", "highway", "city pop"] },
+        { mood: "dreamy", weight: 4, tags: ["dreamy", "ethereal", "dream pop", "psychedelic", "shoegaze", "fantasy"] },
+        { mood: "winter", weight: 4, tags: ["winter", "snow", "cold", "christmas"] },
+        { mood: "rain", weight: 4, tags: ["rain", "rainy", "drizzle"] },
+        { mood: "youth", weight: 4, tags: ["youth", "teen", "school", "青春", "coming of age"] },
+        { mood: "confidence", weight: 4, tags: ["confident", "empowering", "anthem", "strong", "winner"] },
+        { mood: "hope", weight: 4, tags: ["hopeful", "uplifting", "inspirational", "positive", "bright"] }
+      ];
+    }
+
+    function addScoreByLastFmTags(scores, tags, multiplier) {
+      if (!tags || tags.length === 0) return;
+
+      const tagText = tags
+        .map((tag) => tag.name || tag)
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      for (const rule of getLastFmTagRules()) {
+        if (!(rule.mood in scores)) {
+          scores[rule.mood] = 0;
+        }
+
+        for (const tag of rule.tags) {
+          if (tagText.includes(tag.toLowerCase())) {
+            scores[rule.mood] += rule.weight * multiplier;
+          }
+        }
+      }
+    }
+
+    function applyGeneralMoodCorrections(scores, sourceText) {
+      const combined = (sourceText || "").toLowerCase();
+
+      const brightMusicWords = [
+        "あいうえお", "おんがく", "音楽", "うた", "歌", "リズム", "ラララ",
+        "dance", "fun", "party", "children", "kids", "kawaii", "cute"
+      ];
+
+      const strongNegativeWords = [
+        "絶望", "壊", "嫌い", "怖", "苦", "無理", "嘘", "痛",
+        "broken", "pain", "hate", "dark", "depressing"
+      ];
+
+      const hasBrightMusic = brightMusicWords.some((word) => combined.includes(word));
+      const hasStrongNegative = strongNegativeWords.some((word) => combined.includes(word));
+
+      if (hasBrightMusic && !hasStrongNegative) {
+        scores.playful += 8;
+        scores.happy += 4;
+        scores.healing += 2;
+        scores.dark -= 5;
+        scores.fragile -= 3;
+        scores.lonely -= 3;
+      }
+
+      if (scores.happy > 0 && (scores.dark >= 6 || scores.fragile >= 6 || scores.lonely >= 6)) {
+        scores.happy -= 2;
+      }
+    }
+
+    function getMoodRules() {
+      return [
+        {
+          mood: "heartbreak",
+          weight: 4,
+          words: [
+            "別れ", "さよなら", "失恋", "もう会えない", "忘れたい", "戻れない",
+            "最後", "終わった恋", "離れ", "置いていく",
+            "goodbye", "farewell", "breakup", "heartbreak", "left me", "gone"
+          ]
+        },
+        {
+          mood: "obsession",
+          weight: 4,
+          words: [
+            "依存", "執着", "離せない", "閉じ込め", "君だけ", "あなたしか",
+            "狂う", "欲しい", "奪", "支配",
+            "obsession", "obsessed", "addicted", "only you", "possessive"
+          ]
+        },
+        {
+          mood: "anger",
+          weight: 4,
+          words: [
+            "怒", "憎", "許さない", "ふざけるな", "黙れ", "嫌い", "壊して",
+            "ぶっ壊", "叫べ", "反撃",
+            "anger", "angry", "hate", "shout", "scream", "revenge"
+          ]
+        },
+        {
+          mood: "rebellion",
+          weight: 4,
+          words: [
+            "反逆", "革命", "自由", "抜け出す", "壊せ", "抗え", "従わない",
+            "ルール", "檻", "鎖",
+            "rebel", "rebellion", "break out", "freedom", "revolution"
+          ]
+        },
+        {
+          mood: "numb",
+          weight: 4,
+          words: [
+            "空っぽ", "何もない", "無感情", "感じない", "疲れた", "どうでもいい",
+            "白", "透明", "からっぽ",
+            "empty", "numb", "nothing", "tired", "blank", "hollow"
+          ]
+        },
+        {
+          mood: "fragile",
+          weight: 4,
+          words: [
+            "壊れそう", "割れ", "震え", "繊細", "嘘つき",
+            "弱い", "傷", "痛み",
+            "fragile", "glass", "breakable", "tremble", "wound"
+          ]
+        },
+        {
+          mood: "bittersweet",
+          weight: 3,
+          words: [
+            "甘い", "切ない", "まぶしい", "幸せだった", "楽しかった", "少し痛い",
+            "宝物", "思い出す",
+            "bittersweet", "sweet pain", "tender", "precious"
+          ]
+        },
+        {
+          mood: "rain",
+          weight: 4,
+          words: [
+            "雨", "傘", "濡れ", "水たまり", "雫", "湿", "梅雨",
+            "rain", "umbrella", "raindrop", "wet", "drizzle"
+          ]
+        },
+        {
+          mood: "winter",
+          weight: 4,
+          words: [
+            "冬", "雪", "白い息", "寒い", "冷たい", "凍る", "氷",
+            "winter", "snow", "cold", "freeze", "ice"
+          ]
+        },
+        {
+          mood: "youth",
+          weight: 4,
+          words: [
+            "青春", "放課後", "制服", "教室", "青", "夏", "走る", "未完成",
+            "youth", "teenage", "school", "blue spring"
+          ]
+        },
+        {
+          mood: "playful",
+          weight: 3,
+          words: [
+            "かわいい", "キャンディ", "遊ぼう", "わくわく", "きらきら", "跳ねる",
+            "cute", "candy", "play", "funny", "sparkle"
+          ]
+        },
+        {
+          mood: "healing",
+          weight: 4,
+          words: [
+            "癒", "休んで", "大丈夫", "眠って", "やさしい", "ゆっくり", "帰る",
+            "heal", "healing", "rest", "gentle", "softly", "breathe"
+          ]
+        },
+        {
+          mood: "midnight",
+          weight: 4,
+          words: [
+            "真夜中", "午前", "眠れない", "夜更け", "時計", "部屋", "深夜",
+            "midnight", "sleepless", "late night", "2am", "3am"
+          ]
+        },
+        {
+          mood: "drive",
+          weight: 4,
+          words: [
+            "ドライブ", "高速", "車", "走る", "街灯", "夜道", "スピード",
+            "drive", "highway", "speed", "running", "road", "headlight"
+          ]
+        },
+        {
+          mood: "confidence",
+          weight: 4,
+          words: [
+            "最強", "無敵", "輝く", "勝つ", "誇れ", "堂々",
+            "confidence", "strong", "queen", "king", "shine", "proud", "winner"
+          ]
+        },
+        {  
+          mood: "dark",
+          weight: 4,
+          words: [
+            "嘘", "痛", "泣", "涙", "闇", "黒", "病", "狂", "孤独", "絶望",
+            "嫌い", "壊", "消え", "終わり", "怖", "苦", "無理",
+            "sad", "cry", "tears", "dark", "broken", "pain", "lie", "empty"
+          ]
+        },
+        {
+          mood: "lonely",
+          weight: 3,
+          words: [
+            "ひとり", "一人", "独り", "孤独", "寂", "さみしい", "会いたい",
+            "いない", "置いて", "離れ", "遠い",
+            "alone", "lonely", "missing", "without you", "solitude"
+          ]
+        },
+        {
+          mood: "love",
+          weight: 3,
+          words: [
+            "恋", "愛", "好き", "君", "あなた", "抱きしめ", "キス", "心",
+            "love", "lover", "kiss", "heart", "romance", "sweet"
+          ]
+        },
+        {
+          mood: "energy",
+          weight: 3,
+          words: [
+            "走", "叫", "戦", "勝", "燃", "炎", "革命", "壊せ", "飛べ",
+            "fire", "fight", "run", "burn", "rage", "hero", "rock", "monster"
+          ]
+        },
+        {
+          mood: "hope",
+          weight: 3,
+          words: [
+            "明日", "未来", "希望", "光", "朝", "始まり", "進む", "大丈夫",
+            "もう一度", "信じ",
+            "hope", "future", "light", "start", "again", "begin"
+          ]
+        },
+        {
+          mood: "nostalgia",
+          weight: 3,
+          words: [
+            "思い出", "記憶", "昔", "夕焼け", "帰り道", "夏", "懐", "ふるさと",
+            "remember", "memory", "past", "home", "old days"
+          ]
+        },
+        {
+          mood: "city",
+          weight: 3,
+          words: [
+            "東京", "街", "都会", "ネオン", "交差点", "信号", "夜景", "渋谷", "新宿",
+            "city", "tokyo", "neon", "street", "urban", "night drive"
+          ]
+        },
+        {
+          mood: "dreamy",
+          weight: 3,
+          words: [
+            "夢", "星", "魔法", "幻想", "宇宙", "銀河", "浮", "眠り",
+            "dream", "star", "magic", "fantasy", "floating", "float"
+          ]
+        },
+        {
+          mood: "chill",
+          weight: 3,
+          words: [
+            "風", "海", "空", "雲", "眠", "静", "淡", "水", "春",
+            "sea", "wind", "sky", "sleep", "slow", "chill", "acoustic", "jazz", "lofi"
+          ]
+        },
+        {
+          mood: "happy",
+          weight: 2,
+          words: [
+            "楽しい", "嬉しい", "幸せ", "最高", "祝福", "パーティー",
+            "joy", "happy end", "celebrate", "party", "sunshine"
+          ]
+        }
+      ];
+    }
+
+    function getMoodRankings(scores) {
+      return Object.entries(scores)
+        .filter(([, score]) => Number.isFinite(score) && score > 0)
+        .sort((a, b) => b[1] - a[1])
+        .map(([mood, score]) => ({ mood, score }));
+    }
+
+    function getBestMood(scores) {
+      const rankings = getMoodRankings(scores);
+      const best = rankings[0];
+
+      if (!best) {
+        return "neutral";
+      }
+
+      // neutralは「本当に材料が少ない時」だけにする。
+      // 前の版はhappyを厳しく落としすぎて、neutralが多くなっていた。
+      if (best.score < 2) {
+        return "neutral";
+      }
+
+      return best.mood;
+    }
+
+    function formatMoodRankings(rankings) {
+      if (!rankings || rankings.length === 0) {
+        return "main mood: neutral";
+      }
+
+      const topThree = rankings.slice(0, 3);
+      const labels = topThree.map((item) => {
+        const poem = poemDatabase[item.mood];
+        const label = poem?.label || item.mood;
+        return label.split(" / ")[0];
+      });
+
+      const first = topThree[0];
+      const second = topThree[1];
+
+      if (second && first.score - second.score <= 3) {
+        return `mixed mood: ${labels.join(" / ")}`;
+      }
+
+      return `main mood: ${labels[0]}${labels.length > 1 ? "   sub: " + labels.slice(1).join(" / ") : ""}`;
+    }
+
+    function judgeMoodFromTrackOnly(track) {
+      const scores = createEmptyScores();
+      const rules = getMoodRules();
+
+      const trackText = [
+        track.trackName,
+        track.artistName,
+        track.collectionName,
+        track.primaryGenreName
+      ]
+        .filter(Boolean)
+        .join(" ");
+
+      addScoreByRules(scores, trackText, rules, 1);
+
+      const genre = (track.primaryGenreName || "").toLowerCase();
+
+      if (genre.includes("rock") || genre.includes("metal") || genre.includes("punk")) {
+        scores.energy += 2;
+      }
+
+      if (genre.includes("dance") || genre.includes("electronic")) {
+        scores.energy += 1;
+        scores.city += 1;
+      }
+
+      if (genre.includes("jazz") || genre.includes("classical")) {
+        scores.chill += 2;
+      }
+
+      const title = (track.trackName || "").toLowerCase();
+
+      if (title.includes("happy") || title.includes("ハッピー")) {
+        scores.happy += 0.5;
+      }
+
+      if (
+        (title.includes("happy") || title.includes("ハッピー")) &&
+        (scores.dark >= 3 || scores.lonely >= 3)
+      ) {
+        scores.dark += 3;
+        scores.happy -= 2;
+      }
+
+      return {
+        mood: getBestMood(scores),
+        scores
+      };
+    }
+
+    function judgeMoodFromLyrics(track, lyricsText) {
+      const scores = createEmptyScores();
+      const rules = getMoodRules();
+
+      const trackText = [
+        track.trackName,
+        track.artistName,
+        track.collectionName,
+        track.primaryGenreName
+      ]
+        .filter(Boolean)
+        .join(" ");
+
+      const lyrics = cleanLyricsText(lyricsText);
+
+      addScoreByRules(scores, trackText, rules, 1);
+      addScoreByRules(scores, lyrics, rules, 3);
+
+      const combined = `${trackText} ${lyrics}`.toLowerCase();
+
+      if (
+        combined.includes("happy") ||
+        combined.includes("ハッピー") ||
+        combined.includes("笑")
+      ) {
+        scores.happy += 1;
+      }
+
+      if (
+        (combined.includes("happy") || combined.includes("ハッピー")) &&
+        (scores.dark >= 6 || scores.lonely >= 5)
+      ) {
+        scores.dark += 4;
+        scores.happy -= 3;
+      }
+
+      if (
+        (combined.includes("笑") || combined.includes("smile")) &&
+        (combined.includes("嘘") || combined.includes("痛") || combined.includes("泣"))
+      ) {
+        scores.dark += 3;
+      }
+
+      if (
+        combined.includes("夜") &&
+        (combined.includes("東京") || combined.includes("街") || combined.includes("ネオン"))
+      ) {
+        scores.city += 3;
+        scores.dark += 1;
+      }
+
+      if (
+        combined.includes("雨") &&
+        (combined.includes("恋") || combined.includes("愛") || combined.includes("君"))
+      ) {
+        scores.love += 1;
+        scores.dark += 2;
+      }
+
+      if (
+        combined.includes("雨") &&
+        (combined.includes("別れ") || combined.includes("さよなら") || combined.includes("会えない"))
+      ) {
+        scores.rain += 2;
+        scores.heartbreak += 3;
+      }
+
+      if (
+        combined.includes("冬") &&
+        (combined.includes("別れ") || combined.includes("君") || combined.includes("会えない"))
+      ) {
+        scores.winter += 2;
+        scores.heartbreak += 2;
+      }
+
+      if (
+        (combined.includes("真夜中") || combined.includes("眠れない") || combined.includes("深夜")) &&
+        (combined.includes("部屋") || combined.includes("時計"))
+      ) {
+        scores.midnight += 3;
+      }
+
+      if (
+        (combined.includes("かわいい") || combined.includes("cute") || combined.includes("happy") || combined.includes("ハッピー")) &&
+        (combined.includes("嘘") || combined.includes("痛") || combined.includes("壊") || combined.includes("嫌い"))
+      ) {
+        scores.dark += 3;
+        scores.fragile += 2;
+        scores.happy -= 2;
+        scores.playful -= 2;
+      }
+
+      if (
+        (combined.includes("東京") || combined.includes("街") || combined.includes("ネオン")) &&
+        (combined.includes("真夜中") || combined.includes("夜") || combined.includes("深夜"))
+      ) {
+        scores.city += 3;
+        scores.midnight += 2;
+      }
+
+      if (
+        (combined.includes("走") || combined.includes("drive") || combined.includes("高速")) &&
+        (combined.includes("夜") || combined.includes("街灯") || combined.includes("road"))
+      ) {
+        scores.drive += 3;
+        scores.city += 1;
+      }
+
+      if (
+        (combined.includes("大丈夫") || combined.includes("休") || combined.includes("息")) &&
+        (combined.includes("疲") || combined.includes("泣") || combined.includes("痛"))
+      ) {
+        scores.healing += 3;
+        scores.fragile += 1;
+      }
+
+      return {
+        mood: getBestMood(scores),
+        scores
+      };
+    }
+
+    function chooseBestLyricsRecord(records, track) {
+      if (!records || records.length === 0) {
+        return null;
+      }
+
+      const trackName = (track.trackName || "").toLowerCase();
+      const artistName = (track.artistName || "").toLowerCase();
+
+      const scored = records.map((record) => {
+        let score = 0;
+
+        const recordTrack = (record.trackName || "").toLowerCase();
+        const recordArtist = (record.artistName || "").toLowerCase();
+
+        if (recordTrack === trackName) score += 5;
+        if (recordTrack.includes(trackName) || trackName.includes(recordTrack)) score += 2;
+        if (recordArtist === artistName) score += 5;
+        if (recordArtist.includes(artistName) || artistName.includes(recordArtist)) score += 2;
+
+        if (record.plainLyrics) score += 2;
+        if (record.syncedLyrics) score += 1;
+
+        return {
+          record,
+          score
+        };
+      });
+
+      scored.sort((a, b) => b.score - a.score);
+
+      return scored[0].record;
+    }
+
+    async function fetchLyricsForTrack(track) {
+      const params = new URLSearchParams({
+        track_name: track.trackName || "",
+        artist_name: track.artistName || ""
+      });
+
+      const url = `https://lrclib.net/api/search?${params.toString()}`;
+
+      try {
+        const response = await fetch(url, {
+          headers: {
+            "Accept": "application/json"
+          }
+        });
+
+        if (!response.ok) {
+          return {
+            lyrics: "",
+            found: false,
+            message: "歌詞検索は失敗しました。曲情報だけで判定しました。"
+          };
+        }
+
+        const records = await response.json();
+        const bestRecord = chooseBestLyricsRecord(records, track);
+
+        if (!bestRecord) {
+          return {
+            lyrics: "",
+            found: false,
+            message: "歌詞は見つかりませんでした。曲情報だけで判定しました。"
+          };
+        }
+
+        const lyrics = bestRecord.plainLyrics || bestRecord.syncedLyrics || "";
+
+        if (!lyrics) {
+          return {
+            lyrics: "",
+            found: false,
+            message: "歌詞データが空でした。曲情報だけで判定しました。"
+          };
+        }
+
+        return {
+          lyrics,
+          found: true,
+          message: "歌詞を判定に使用しました。本文は表示していません。"
+        };
+      } catch (error) {
+        console.error(error);
+
+        return {
+          lyrics: "",
+          found: false,
+          message: "歌詞検索中にエラーが起きました。曲情報だけで判定しました。"
+        };
+      }
+    }
+
+    async function fetchLastFmTagsForTrack(track) {
+      const apiKey = LASTFM_API_KEY.trim();
+
+      if (!apiKey || apiKey === "") {
+        return {
+          tags: [],
+          found: false,
+          message: "Last.fmタグは未設定です。APIキーを入れると補助判定できます。"
+        };
+      }
+
+      const params = new URLSearchParams({
+        method: "track.getTopTags",
+        artist: track.artistName || "",
+        track: track.trackName || "",
+        api_key: apiKey,
+        format: "json",
+        autocorrect: "1"
+      });
+
+      const url = `https://ws.audioscrobbler.com/2.0/?${params.toString()}`;
+
+      try {
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          return {
+            tags: [],
+            found: false,
+            message: "Last.fmタグ取得に失敗しました。"
+          };
+        }
+
+        const data = await response.json();
+        const rawTags = data?.toptags?.tag || [];
+        const tags = Array.isArray(rawTags) ? rawTags.slice(0, 12) : [];
+
+        if (tags.length === 0) {
+          return {
+            tags: [],
+            found: false,
+            message: "Last.fmタグは見つかりませんでした。"
+          };
+        }
+
+        return {
+          tags,
+          found: true,
+          message: `Last.fmタグを補助判定に使用しました: ${tags.slice(0, 5).map((tag) => tag.name).join(" / ")}`
+        };
+      } catch (error) {
+        console.error(error);
+        return {
+          tags: [],
+          found: false,
+          message: "Last.fmタグ取得中にエラーが起きました。"
+        };
+      }
+    }
+
+    async function searchMusic() {
+      const input = document.getElementById("song-input").value.trim();
+
+      hideError();
+
+      if (!input) {
+        showError("曲名かアーティスト名を入れてください。");
+        return;
+      }
+
+      document.getElementById("main-ui").style.display = "none";
+      document.getElementById("loading-ui").style.display = "block";
+      document.getElementById("result-ui").style.display = "none";
+
+      try {
+        const url =
+          "https://itunes.apple.com/search" +
+          `?term=${encodeURIComponent(input)}` +
+          "&country=JP" +
+          "&media=music" +
+          "&entity=song" +
+          "&limit=1";
+
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          throw new Error("曲の情報取得に失敗しました。");
+        }
+
+        const data = await response.json();
+
+        if (!data.results || data.results.length === 0) {
+          throw new Error("曲が見つかりませんでした。別のキーワードで試してください。");
+        }
+
+        const track = data.results[0];
+        const lyricsResult = await fetchLyricsForTrack(track);
+        const lastFmResult = await fetchLastFmTagsForTrack(track);
+
+        let moodResult;
+
+        if (lyricsResult.found) {
+          moodResult = judgeMoodFromLyrics(track, lyricsResult.lyrics);
+          addScoreByLastFmTags(moodResult.scores, lastFmResult.tags, 2);
+        } else {
+          moodResult = judgeMoodFromTrackOnly(track);
+          addScoreByLastFmTags(moodResult.scores, lastFmResult.tags, 4);
+
+          if (!lastFmResult.found) {
+            Object.keys(moodResult.scores).forEach((key) => {
+              if (key !== "neutral") moodResult.scores[key] *= 0.55;
+            });
+          }
+        }
+
+        const correctionText = [
+          track.trackName,
+          track.artistName,
+          track.collectionName,
+          track.primaryGenreName,
+          lyricsResult.found ? lyricsResult.lyrics : "",
+          lastFmResult.tags.map((tag) => tag.name).join(" "),
+          input
+        ].join(" ");
+
+        applyGeneralMoodCorrections(moodResult.scores, correctionText);
+
+        const rankings = getMoodRankings(moodResult.scores);
+        const mood = getBestMood(moodResult.scores);
+        const selectedPoem = poemDatabase[mood] || poemDatabase.neutral || poemDatabase.happy;
+        const moodLabel = formatMoodRankings(rankings);
+
+        document.body.style.background = selectedPoem.bg;
+
+        document.getElementById("music-jacket").src = getLargeArtwork(track.artworkUrl100);
+        document.getElementById("res-song-title").innerText = track.trackName || "曲名不明";
+        document.getElementById("res-artist-name").innerText = track.artistName || "アーティスト不明";
+        document.getElementById("res-album-name").innerText = track.collectionName || "アルバム不明";
+
+        document.getElementById("res-music-review").innerText = selectedPoem.review;
+        document.getElementById("mood-badge").innerText = moodLabel;
+        document.getElementById("lyrics-status").innerText = `${lyricsResult.message} / ${lastFmResult.message}`;
+
+        document.getElementById("res-poem-body").innerText = selectedPoem.body;
+        document.getElementById("res-poem-title").innerText = selectedPoem.title;
+        document.getElementById("res-poem-author").innerText = selectedPoem.author;
+        document.getElementById("res-poem-review").innerText = selectedPoem.poem_review;
+
+        const audio = document.getElementById("preview-audio");
+
+        if (track.previewUrl) {
+          audio.src = track.previewUrl;
+          audio.style.display = "block";
+        } else {
+          audio.pause();
+          audio.removeAttribute("src");
+          audio.style.display = "none";
+        }
+
+        const musicLink = document.getElementById("music-link");
+        musicLink.href = track.trackViewUrl || track.collectionViewUrl || "#";
+
+        document.getElementById("loading-ui").style.display = "none";
+        document.getElementById("result-ui").style.display = "block";
+      } catch (error) {
+        console.error(error);
+
+        document.getElementById("loading-ui").style.display = "none";
+        document.getElementById("main-ui").style.display = "block";
+
+        showError(error.message || "エラーが起きました。");
+      }
+    }
+
+    function resetApp() {
+      document.body.style.background = "#121212";
+
+      document.getElementById("song-input").value = "";
+      document.getElementById("result-ui").style.display = "none";
+      document.getElementById("loading-ui").style.display = "none";
+      document.getElementById("main-ui").style.display = "block";
+
+      const audio = document.getElementById("preview-audio");
+      audio.pause();
+      audio.removeAttribute("src");
+
+      hideError();
+    }
+
+  </script>
+</body>
+</html>
